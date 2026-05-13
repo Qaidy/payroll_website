@@ -4,7 +4,12 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Payroll;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-Route::view('/', 'welcome');
+Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
+})->name('home');
 
 Route::get('dashboard', \App\Livewire\Dashboard\Dashboard::class)
     ->middleware(['auth', 'verified'])

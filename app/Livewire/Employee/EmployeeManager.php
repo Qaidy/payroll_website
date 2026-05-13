@@ -3,15 +3,24 @@
 namespace App\Livewire\Employee;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\Employee;
 
 class EmployeeManager extends Component
 {
+    use WithPagination;
+
     // Menyimpan ID karyawan (null = mode tambah, ada nilai = mode edit)
     public ?int $employee_id = null;
 
      // Penanda apakah sedang dalam mode edit
     public bool $isEditMode = false;
+
+    // Toggle form visibility
+    public bool $showForm = false;
+
+    // Search
+    public string $search = '';
 
     // Properti yang terhubung dengan input form (binding Livewire)
     public string $nik ='';
@@ -20,9 +29,20 @@ class EmployeeManager extends Component
     public string $position ='';
     public string $address ='';
 
+    // Reset pagination when search changes
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    // Open form for new employee
+    public function openForm(): void
+    {
+        $this->resetForm();
+        $this->showForm = true;
+    }
 
     // create/update data
-
     public function store(){
         // validasi input form
         // NIK harus unik, tapi dikecualikan jika sedang edit data sendiri
@@ -82,6 +102,7 @@ class EmployeeManager extends Component
         $this->phone       = $emp->phone;
         $this->address     = $emp->address;
         $this->isEditMode  = true;
+        $this->showForm    = true;
     }
 
     // 3. DELETE
@@ -93,15 +114,25 @@ class EmployeeManager extends Component
 
     public function resetForm()
     {
-        $this->reset(['employee_id', 'nik', 'name', 'phone', 'position', 'address', 'isEditMode']);
+        $this->reset(['employee_id', 'nik', 'name', 'phone', 'position', 'address', 'isEditMode', 'showForm']);
         $this->resetValidation();
     }
 
     // 4. READ
     public function render()
     {
+        $query = Employee::query();
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('nik', 'like', '%' . $this->search . '%')
+                  ->orWhere('position', 'like', '%' . $this->search . '%');
+            });
+        }
+
         return view('livewire.employee.employee-manager', [
-            'employees' => Employee::orderBy('id', 'desc')->get(),
+            'employees' => $query->orderBy('id', 'desc')->paginate(10),
         ])->layout('layouts.app');
     }
 }
