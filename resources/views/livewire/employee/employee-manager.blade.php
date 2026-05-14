@@ -46,6 +46,11 @@
                     @error('name') <span class="form-error">{{ $message }}</span> @enderror
                 </div>
                 <div>
+                    <label class="form-label">Email Akun</label>
+                    <input type="email" wire:model.blur="email" class="form-input-styled" placeholder="Masukkan email untuk login">
+                    @error('email') <span class="form-error">{{ $message }}</span> @enderror
+                </div>
+                <div>
                     <label class="form-label">Nomor Induk / NIK</label>
                     <input type="text" wire:model.blur="nik" class="form-input-styled" placeholder="Contoh: 001234">
                     @error('nik') <span class="form-error">{{ $message }}</span> @enderror
